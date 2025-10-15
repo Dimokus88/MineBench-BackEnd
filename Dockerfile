@@ -1,16 +1,15 @@
-# Use official Node.js LTS image
 FROM node:22-alpine
-
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm install 
+RUN npm ci   # предпочтительнее, чем npm install для CI/докера
 
 COPY . .
 
-# Build TypeScript (if needed)
-RUN npm run build || true
+# Сгенерировать Prisma Client и собрать TS
+RUN npx prisma generate
+RUN npm run build
 
+ENV NODE_ENV=production
 EXPOSE 3000
-
-CMD ["npm", "run", "start"]
+CMD ["node", "dist/server.js"]
