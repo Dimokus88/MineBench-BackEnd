@@ -1,16 +1,17 @@
-# Use official Node.js LTS image
-FROM node:22-alpine
-
+# build stage
+FROM node:20-alpine AS build
 WORKDIR /app
-
-COPY package.json package-lock.json* ./
-RUN npm install --production
-
+COPY package*.json ./
+RUN npm ci
 COPY . .
+RUN npm run build
 
-# Build TypeScript (if needed)
-RUN npm run build || true
-
+# production stage (только прод-зависимости + собранный код)
+FROM node:20-alpine
+WORKDIR /app
+ENV NODE_ENV=production
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=build /app/dist ./dist
 EXPOSE 3000
-
-CMD ["npm", "run", "dev"]
+CMD ["node", "dist/server.js"]
