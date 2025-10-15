@@ -1,4 +1,4 @@
-name: Build & Push Docker image
+name: Build & Push Docker image (BackEnd)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: docker-${{ github.ref }}
+  group: backend-docker-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -17,16 +17,16 @@ jobs:
 
     permissions:
       contents: read
-      packages: write   # нужно, чтобы пушить в GHCR
+      packages: write   # нужно для публикации в GHCR
 
     env:
-      IMAGE_NAME: minebench-frontend  # имя пакета/образа в GHCR
+      IMAGE_NAME: minebench-backend  # имя образа в GHCR
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          submodules: true
+          submodules: true   # на случай, если в будущем появятся сабмодули
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -52,7 +52,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # На PR только сборка (без push)
+      # На PR только сборка (без пуша)
       - name: Build (PR only)
         if: github.event_name == 'pull_request'
         uses: docker/build-push-action@v6
